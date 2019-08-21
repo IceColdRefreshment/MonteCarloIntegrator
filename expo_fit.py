@@ -5,49 +5,57 @@ import integrand as inte
 peak_0 = 2.0+2.0*np.sqrt(3.0)
 height = 0.1295
 k2=0.3
-k1=1.0
-def g1(s):
-    '''for zero_0<x<peak_0'''
-    return height*np.exp(k1*(s-peak_0))
+k1=1.0                                                                               # parameters for exponential fitting
 
-def pho1(s):
-    '''pho1(s)'''
-    return height/k1 * np.exp(k1*(s-peak_0))
+def g1(s,height=height,k1=k1,k2=k2,peak_0=peak_0):
+    """
+    g(s). Here it is 2 connected exponential functions with the same peak at peak_0
+    s: ndArray or float, s = (p1+p1)^2
+    """
+    if (isinstance(s,float)):                                                        # Datatype test 
+        if(s<peak_0):                                                                # Piecewise function
+            return height*np.exp(k1*(s-peak_0))                                      # Left side of the peak
+        else:
+            return height*np.exp(k2*(peak_0-s))                                      # Right side of the peak
+    else:
+        ret = np.zeros(len(s),dtype=float)
+        ret[s<peak_0] = height*np.exp(k1*(s[s<peak_0]-peak_0))
+        ret[s>=peak_0] = height*np.exp(k2*(peak_0-s[s>=peak_0]))
+        return ret
 
-def s1(pho):
-    '''s1(pho)'''
-    return np.log(k1*pho/height)/k1 + peak_0
+def rho1(s,height=height,k1=k1,k2=k2,peak_0=peak_0):
+    """
+    rho(s). It is essentially indefinite integral of g(s)
+    s: ndArray or float, s = (p1+p2)^2
+    """
+    if(isinstance(s,float)):
+        if (s<peak_0):
+            return height/k1 * np.exp(k1*(s-peak_0))
+        else:
+            return height/k1 - height/k2 * np.exp(k2*(peak_0-s)) + height/k2
+    else:
+        ret = np.zeros(len(s),dtype=float)
+        ret[s<peak_0] = height/k1 * np.exp(k1*(s[s<peak_0]-peak_0))
+        ret[s>=peak_0] = height/k1 - height/k2 * np.exp(k2*(peak_0-s)) + height/k2
+        return ret
 
-def g2(s):
-    '''for x>peak_0'''
-    return height*np.exp(k2*(peak_0-s))
-
-def pho2(s):
-    '''pho2(s)'''
-    return -height/k2 * np.exp(k2*(peak_0-s))
-
-def s2(pho):
-    '''s2(pho)'''
-    return -np.log(-k2*pho/height)/k2 + peak_0
-
-'''def MonteCarloIntegrate():
-    xs = np.arange(start,end,interval)
-''' 
+def s1(rho):
+    crit = height/k1
+    if(isinstance(rho,float)):
+        if(rho < crit):
+            return np.log(k1*rho/height)/k1 + peak_0
+        else:
+            return -np.log(-k2*(rho-crit)/height)/k2 + peak_0
+    else:
+        ret = np.zeros(len(rho),dtype=float)
+        ret[rho < crit] = np.log(k1*rho[rho<crit]/height)/k1 + peak_0
+        ret[rho > crit] = -np.log(-k2*(rho[rho>crit]-crit-height/k2)/height)/k2 + peak_0
+        return ret
 
 if(__name__=='__main__'):
+    print(rho1(2.0))
     ss = np.arange(4.0,50.0,0.01)
-    ss1 = np.arange(4.0,peak_0,0.01)
-    ss2 = np.arange(peak_0,50.0,0.01)
 
     plt.plot(ss,inte.f(ss),color='black')
-    plt.plot(ss1,g1(ss1),color='green')
-    plt.plot(ss2,g2(ss2),color='red')
-    plt.savefig('expo_fit.png')
-    plt.show()
-
-    plt.figure()
-    plt.plot(ss1, inte.f(ss1)/g1(ss1))
-    plt.plot(ss2, inte.f(ss2)/g2(ss2))
-    plt.yscale('log')
-    plt.savefig('expo_fit_goodness.png')
+    plt.plot(ss,g1(ss),color='red')
     plt.show()

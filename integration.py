@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import integrand as inte
-import expo_fit_new as fit
+import expo_fit as fit
 
 start = 4.0
 end = 25.0
@@ -9,11 +9,11 @@ end = 25.0
 def MonteCarloIntegrate(N,rounds,fit=fit,inte=inte,start=start,end=end):
     """ 
         Monte Carlo Integration by Importance Sampling
-        N : number of intergration per round
-        rounds: number of rounds. Note: total points of integration = N * rounds
-        inte: function of integrand
-        fit: function used to fit
-        start, end: range of integration
+        N : integer, number of intergration per round
+        rounds: integer, number of rounds. Note: total points of integration = N * rounds
+        inte: function, the integrand
+        fit: function, for fitting
+        start, end: floats, range of integration
     """
     f = open('combined.csv','w+')
     f.write('No.,Result,Error\n')                                      # File operations
@@ -36,7 +36,8 @@ def MonteCarloIntegrate(N,rounds,fit=fit,inte=inte,start=start,end=end):
         sum_ysq += np.sum(y*y)
         ans = sum_y / ((i+1)*N)                                        # Answer = average of y
 
-        err = np.sqrt((sum_ysq / ((i+1)*N) - (sum_y/((i+1)*N)) **2) / ((i+1)*N))    # Compute the error
+        err = np.sqrt((sum_ysq / ((i+1)*N) - (sum_y/((i+1)*N)) **2) / ((i+1)*N))    
+                                                                       # Compute the error
      
         print("No. =",(i+1)*N,"Ans =",ans,"Error =",err)
         f.write(str((i+1)*N)+','+str(ans)+','+str(err)+'\n')
