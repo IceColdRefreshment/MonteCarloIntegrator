@@ -1,75 +1,45 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import integrand as inte
-import combine_fit as fit
-#import cauchy_fit as fit
+import expo_fit_new as fit
 
 start = 4.0
 end = 25.0
-#interval = 5.0
-zero_0 = 4.0
-peak_0 = 2.0+2.0*np.sqrt(3.0)
 
-def directIntegrate(N):
-    xs = np.random.uniform(start,end,N)
-    ys = inte.f(xs)
-    ans = np.sum(ys)*(end-start)/N
-    return ans
-
-def MonteCarloIntegrate(N,rounds):
-
+def MonteCarloIntegrate(N,rounds,fit=fit,inte=inte,start=start,end=end):
+    """ 
+        Monte Carlo Integration by Importance Sampling
+        N : number of intergration per round
+        rounds: number of rounds. Note: total points of integration = N * rounds
+        inte: function of integrand
+        fit: function used to fit
+        start, end: range of integration
+    """
     f = open('combined.csv','w+')
-    f.write('No.,Result,Error\n')
+    f.write('No.,Result,Error\n')                                      # File operations
 
-    ans = 0.0
-    cnt_1 = 0
-    cnt_2 = 0
-    sum_y = 0.0
-    sum_ysq = 0.0
+    ans = 0.0                                                          # Result of integration
+    sum_y = 0.0                                                        # Sum of y = f/g
+    sum_ysq = 0.0                                                      # Sum of y^2 = (f/g)^2
 
-    int1, int2, int3, int4 = fit.pho1(start), fit.pho1(peak_0), fit.pho2(peak_0), fit.pho2(end)
-    area1 = int2 - int1
-    area2 = int4 - int3
-    area = area1 + area2
-    norm_factor = 1.0 / area
+    area = fit.rho1(end) - fit.rho1(start)
+    norm_factor = 1.0 / area                                           # Normalization factor
 
-    print('norm_factor = ',norm_factor)
+    print('Normalization Factor =',norm_factor)
 
     for i in range(rounds):
-
-        rhos = np.random.uniform(0.0,area,N)
-
-        regime = np.zeros(N,dtype=int)
-        regime[rhos<area1] = 1
-        regime[rhos>area1] = 2
-
-        rhoo1 = rhos + int1
-        s1 = fit.s1(rhoo1)
-        y1 = inte.f(s1) / (norm_factor*fit.g1(s1))
-        rhoo2 = rhos - area1 + int3
-        s2 = fit.s2(rhoo2)
-        y2 = inte.f(s2) / (norm_factor*fit.g2(s2))
-
-        s = np.zeros(N,dtype=float)
-        y = np.zeros(N,dtype=float)
-        s[regime==1]=s1[regime==1]
-        s[regime==2]=s2[regime==2]
-        y[regime==1]=y1[regime==1]
-        y[regime==2]=y2[regime==2]
-
-        cnt_1 += np.sum(regime[regime==1])
-        cnt_2 += np.sum(regime[regime==2])/2
+        rhos = np.random.uniform(fit.rho1(start),fit.rho1(end),N)      # Uniform sampling of rho(s)
+        s = fit.s1(rhos)                                               # Transfer rho into s by s = rho^-1  
+        y = inte.f(s) / (norm_factor*fit.g1(s))                        # y = f/g
 
         sum_y += np.sum(y)
         sum_ysq += np.sum(y*y)
-        ans = sum_y / ((i+1)*N)
-        #err = ans / np.sqrt((i+1)*N)
+        ans = sum_y / ((i+1)*N)                                        # Answer = average of y
 
-        err = np.sqrt((sum_ysq / ((i+1)*N) - (sum_y/((i+1)*N)) **2) / ((i+1)*N))
-
-        print((i+1)*N,sum_y,ans,err)
+        err = np.sqrt((sum_ysq / ((i+1)*N) - (sum_y/((i+1)*N)) **2) / ((i+1)*N))    # Compute the error
+     
+        print("No. =",(i+1)*N,"Ans =",ans,"Error =",err)
         f.write(str((i+1)*N)+','+str(ans)+','+str(err)+'\n')
-    print('Cnt_1 = ',cnt_1,'Cnt_2=',cnt_2)
     f.close()
     return ans,sum_y
 
