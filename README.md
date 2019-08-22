@@ -4,7 +4,7 @@
 This project aims at the evaluation of <\sigma v> of annihilations/scatterings of dark matter models with a given thermal spectrum, where \sigma is the cross-section and v is velocity of dark matter particles.
 
 ## Requirements
-Python 3 with numpy and matplotlib.
+Python with numpy and matplotlib.
 
 ## How to use it
 By modifying integrand.py, you are able to insert the function of your interest as the integrand. The integrand.py provided in this program is a naive 1/s * v with a Maxwell-Boltzmann velocity distribution, which shows a single peak at s = 5.46. The integrand_multipeaks.py file contains an integrand with an additional peak at s = 25.
