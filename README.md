@@ -1,3 +1,6 @@
-# MonteCarloDarkMatter
+# Monte Carlo integrator for dark matter annihilations (prototype)
 
-This program aims at evaluation of <\sigma v> by Monte Carlo integration.
+## Introduction
+This program aims at the evaluation of <\sigma v> of annihilations/scatterings of dark matter models, where \sigma is the cross-section and v is velocity of dark matter particles.
+
+## How to Use it
